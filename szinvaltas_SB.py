@@ -68,7 +68,9 @@ class SzinKezelo_SB:
         valid = True
 
         try:
-            val_f = [float(v) for v in values]
+            val_f = []
+            if source_type != "HEX":
+                val_f = [float(v) for v in values]
 
             if source_type == "RGB":
                 r, g, b = [round(v) for v in val_f]
@@ -89,20 +91,27 @@ class SzinKezelo_SB:
 
             if valid and 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255:
                 self.r, self.g, self.b = r, g, b
+                return True
             else:
                 raise ValueError
         except (ValueError, IndexError):
-            pass
+            return False
 
 
 class Ablak(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Színkód Konverter ZXS6MW v1.1")
+        self.title("Színkód Konverter v1.7")
         self.szin_kezelo = SzinKezelo_SB()
         self.geometry("750x450")
 
         self.input_widgets = {}
+
+        self.konv_forrasok = ["RGB", "HEX", "CMYK", "HSL", "HSV"]
+        self.valasztott_forras = tk.StringVar(self)
+        self.valasztott_forras.set(self.konv_forrasok[0])
+        self.valasztott_forras.trace_add("write", self.reset_ui_fields_esemeny)
+
         self.setup_ui()
         self.update_ui_from_rgb()
 
@@ -119,7 +128,6 @@ class Ablak(tk.Tk):
         for col, nev in enumerate(rgb_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
-            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("RGB"))
             self.rgb_entries[nev] = entry
             self.input_widgets[nev] = entry
         row_idx += 1
@@ -127,7 +135,6 @@ class Ablak(tk.Tk):
         tk.Label(self, text="HEX:").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
         self.hex_entry = tk.Entry(self, width=10)
         self.hex_entry.grid(row=row_idx, column=1, columnspan=4, padx=5, pady=5, sticky="ew")
-        self.hex_entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("HEX"))
         self.input_widgets["HEX"] = self.hex_entry
         row_idx += 1
 
@@ -137,7 +144,6 @@ class Ablak(tk.Tk):
         for col, nev in enumerate(cmyk_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
-            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("CMYK"))
             self.cmyk_entries[nev] = entry
             self.input_widgets[nev] = entry
         row_idx += 1
@@ -148,7 +154,6 @@ class Ablak(tk.Tk):
         for col, nev in enumerate(hsl_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
-            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("HSL"))
             self.hsl_entries[nev] = entry
             self.input_widgets[f"HSL_{nev}"] = entry
         row_idx += 1
@@ -159,16 +164,48 @@ class Ablak(tk.Tk):
         for col, nev in enumerate(hsv_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
-            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("HSV"))
             self.hsv_entries[nev] = entry
             self.input_widgets[f"HSV_{nev}"] = entry
         row_idx += 1
 
         self.szin_panel = tk.Label(self, bg="#000000", width=15, height=5, relief="groove")
-        self.szin_panel.grid(row=0, column=5, rowspan=5, padx=10, pady=10, sticky="nsew")
+        self.szin_panel.grid(row=0, column=5, rowspan=6, padx=10, pady=10, sticky="nsew")
 
-        tk.Button(self, text="Színválasztó", command=self.szinvalaszto_esemeny).grid(row=row_idx, column=0,
-                                                                                     columnspan=5, pady=10)
+        tk.Label(self, text="Konvertálás forrása:").grid(row=row_idx, column=0, columnspan=2, pady=10, sticky="w")
+        self.forras_menu = tk.OptionMenu(self, self.valasztott_forras, *self.konv_forrasok)
+        self.forras_menu.grid(row=row_idx, column=2, columnspan=3, sticky="ew", padx=5)
+        row_idx += 1
+
+        tk.Button(self, text="Törlés", command=self.reset_ui_entry_fields).grid(row=row_idx, column=1, sticky="ew",
+                                                                                padx=5, pady=5)
+
+        tk.Button(self, text="Konvertálás", command=self.main_konvertalas_esemeny).grid(row=row_idx, column=2,
+                                                                                        sticky="ew", padx=5, pady=5)
+
+        tk.Button(self, text="Színválasztó", command=self.szinvalaszto_esemeny).grid(row=row_idx, column=3, sticky="ew",
+                                                                                     padx=5, pady=5)
+
+        row_idx += 1
+
+    def reset_ui_entry_fields(self):
+        self.szin_kezelo.r = 0
+        self.szin_kezelo.g = 0
+        self.szin_kezelo.b = 0
+
+        for entry in self.rgb_entries.values():
+            entry.delete(0, tk.END)
+        self.hex_entry.delete(0, tk.END)
+        for entry in self.cmyk_entries.values():
+            entry.delete(0, tk.END)
+        for entry in self.hsl_entries.values():
+            entry.delete(0, tk.END)
+        for entry in self.hsv_entries.values():
+            entry.delete(0, tk.END)
+
+        self.szin_panel.config(bg="#FFFFFF")
+
+    def reset_ui_fields_esemeny(self, *args):
+        self.reset_ui_entry_fields()
 
     def update_ui_from_rgb(self):
         r, g, b = self.szin_kezelo.r, self.szin_kezelo.g, self.szin_kezelo.b
@@ -201,8 +238,10 @@ class Ablak(tk.Tk):
 
         self.szin_panel.config(bg=hex_kod)
 
-    def frissites_esemeny(self, source_type):
+    def main_konvertalas_esemeny(self):
+        source_type = self.valasztott_forras.get()
         values = []
+
         if source_type == "RGB":
             values = [self.rgb_entries["R"].get(), self.rgb_entries["G"].get(), self.rgb_entries["B"].get()]
         elif source_type == "HEX":

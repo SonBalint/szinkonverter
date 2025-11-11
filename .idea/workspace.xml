@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc12df38-ddbb-4b15-9787-4ea03f230887" name="Changes" comment="1.0 sima színátváltó">
+    <list default="true" id="bc12df38-ddbb-4b15-9787-4ea03f230887" name="Changes" comment="1.1 további színkódoláskok hozzáadva (CYMK, HSL, HSV/HSB)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/szinvaltas_SB.py" beforeDir="false" afterPath="$PROJECT_DIR$/szinvaltas_SB.py" afterDir="false" />
     </list>
@@ -85,7 +85,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762854094146</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="1.1 további színkódoláskok hozzáadva (CYMK, HSL, HSV/HSB)">
+      <option name="closed" value="true" />
+      <created>1762854897794</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1762854897794</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -101,6 +109,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="1.0 sima színátváltó" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.0 sima színátváltó" />
+    <MESSAGE value="1.1 további színkódoláskok hozzáadva (CYMK, HSL, HSV/HSB)" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.1 további színkódoláskok hozzáadva (CYMK, HSL, HSV/HSB)" />
   </component>
 </project>
