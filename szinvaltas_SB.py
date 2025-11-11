@@ -101,7 +101,7 @@ class SzinKezelo_SB:
 class Ablak(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Színkód Konverter v1.9")
+        self.title("Színkód Konverter ZXS6MW v1.4")
         self.szin_kezelo = SzinKezelo_SB()
         self.geometry("850x450")
 
