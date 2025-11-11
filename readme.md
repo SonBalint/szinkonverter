@@ -5,7 +5,7 @@ Sonkoly Bálint
 ZXS6MW
 
 ## Feladat leírása
-A program egy grafikus felhasználói felülettel rendelkező színkód konverter, amely képes átváltani az öt leggyakrabban használt színkódolási rendszer között: **RGB, HEX, CMYK, HSL, és HSV**. A konverzió alapja a lenyíló listán kiválasztott forrás (pl. RGB) mezőjében megadott érték. A frissítés és az átváltás a dedikált "Konvertálás" gomb megnyomására történik meg. Az 1.9-es verzió tartalmazza az összes beviteli mező törlésére szolgáló gombot, és másolás funkciót (vágólapra) minden színkód sor végén.
+A program egy grafikus felhasználói felülettel rendelkező színkód konverter, amely képes átváltani az öt leggyakrabban használt színkódolási rendszer között: **RGB, HEX, CMYK, HSL, és HSV**. A konverzió alapja a lenyíló listán kiválasztott forrás (pl. RGB) mezőjében megadott érték. A frissítés és az átváltás a dedikált "Konvertálás" gomb megnyomására történik meg. Az 1.4.2-es verzió tartalmazza az összes beviteli mező törlésére szolgáló gombot, és másolás funkciót (vágólapra) minden színkód sor végén.
 
 ## Modulok és a felhasznált függvények/osztályok
 
