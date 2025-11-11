@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc12df38-ddbb-4b15-9787-4ea03f230887" name="Changes" comment="1.3 másolás gomb">
+    <list default="true" id="bc12df38-ddbb-4b15-9787-4ea03f230887" name="Changes" comment="1.4 hibajavítások">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/szinvaltas_SB.py" beforeDir="false" afterPath="$PROJECT_DIR$/szinvaltas_SB.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -109,7 +110,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762857350658</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="1.4 hibajavítások">
+      <option name="closed" value="true" />
+      <created>1762858499161</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1762858499161</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -128,6 +137,7 @@
     <MESSAGE value="1.1 további színkódoláskok hozzáadva (CYMK, HSL, HSV/HSB)" />
     <MESSAGE value="1.2 konvertálás gomb, törlés gomb, lenyíló lista (konverzió alapja), hibajavítások" />
     <MESSAGE value="1.3 másolás gomb" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.3 másolás gomb" />
+    <MESSAGE value="1.4 hibajavítások" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.4 hibajavítások" />
   </component>
 </project>

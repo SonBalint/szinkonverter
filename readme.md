@@ -1,4 +1,4 @@
-# Színkód Konverter (Python Projektfeladat) - v1.3.1
+# Színkód Konverter (Python Projektfeladat) - v1.4.1
 
 ## Hallgató
 Sonkoly Bálint
