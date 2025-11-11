@@ -101,9 +101,9 @@ class SzinKezelo_SB:
 class Ablak(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Színkód Konverter v1.7")
+        self.title("Színkód Konverter v1.9")
         self.szin_kezelo = SzinKezelo_SB()
-        self.geometry("750x450")
+        self.geometry("850x450")
 
         self.input_widgets = {}
 
@@ -118,58 +118,80 @@ class Ablak(tk.Tk):
     def setup_ui(self):
         for i in range(1, 5):
             tk.Grid.columnconfigure(self, i, weight=1)
-        tk.Grid.columnconfigure(self, 5, weight=1)
+        tk.Grid.columnconfigure(self, 5, weight=0)
+        tk.Grid.columnconfigure(self, 6, weight=1)
 
         row_idx = 0
 
         tk.Label(self, text="RGB (0-255):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
         rgb_nevek = ["R", "G", "B"]
         self.rgb_entries = {}
+        rgb_string_list = []
         for col, nev in enumerate(rgb_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
             self.rgb_entries[nev] = entry
             self.input_widgets[nev] = entry
+            rgb_string_list.append(entry)
+
+        tk.Button(self, text="📋", command=lambda: self.copy_rgb_to_clipboard(rgb_string_list)).grid(row=row_idx,
+                                                                                                    column=5, padx=5,
+                                                                                                    pady=5)
         row_idx += 1
 
         tk.Label(self, text="HEX:").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
         self.hex_entry = tk.Entry(self, width=10)
         self.hex_entry.grid(row=row_idx, column=1, columnspan=4, padx=5, pady=5, sticky="ew")
         self.input_widgets["HEX"] = self.hex_entry
+        tk.Button(self, text="📋", command=lambda: self.copy_to_clipboard_esemeny(self.hex_entry)).grid(row=row_idx,
+                                                                                                       column=5, padx=5,
+                                                                                                       pady=5)
         row_idx += 1
 
         tk.Label(self, text="CMYK (0-100%):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
         cmyk_nevek = ["C", "M", "Y", "K"]
         self.cmyk_entries = {}
+        cmyk_string_list = []
         for col, nev in enumerate(cmyk_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
             self.cmyk_entries[nev] = entry
             self.input_widgets[nev] = entry
+            cmyk_string_list.append(entry)
+        tk.Button(self, text="📋", command=lambda: self.copy_multi_to_clipboard(cmyk_string_list, separator=", ")).grid(
+            row=row_idx, column=5, padx=5, pady=5)
         row_idx += 1
 
         tk.Label(self, text="HSL (H/S/L):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
         hsl_nevek = ["H", "S", "L"]
         self.hsl_entries = {}
+        hsl_string_list = []
         for col, nev in enumerate(hsl_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
             self.hsl_entries[nev] = entry
             self.input_widgets[f"HSL_{nev}"] = entry
+            hsl_string_list.append(entry)
+        tk.Button(self, text="📋", command=lambda: self.copy_hsl_hsv_to_clipboard(hsl_string_list, "HSL")).grid(
+            row=row_idx, column=5, padx=5, pady=5)
         row_idx += 1
 
         tk.Label(self, text="HSV (H/S/V):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
         hsv_nevek = ["H", "S", "V"]
         self.hsv_entries = {}
+        hsv_string_list = []
         for col, nev in enumerate(hsv_nevek):
             entry = tk.Entry(self, width=5)
             entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
             self.hsv_entries[nev] = entry
             self.input_widgets[f"HSV_{nev}"] = entry
+            hsv_string_list.append(entry)
+        tk.Button(self, text="📋", command=lambda: self.copy_hsl_hsv_to_clipboard(hsv_string_list, "HSV")).grid(
+            row=row_idx, column=5, padx=5, pady=5)
         row_idx += 1
 
         self.szin_panel = tk.Label(self, bg="#000000", width=15, height=5, relief="groove")
-        self.szin_panel.grid(row=0, column=5, rowspan=6, padx=10, pady=10, sticky="nsew")
+        self.szin_panel.grid(row=0, column=6, rowspan=6, padx=10, pady=10, sticky="nsew")
 
         tk.Label(self, text="Konvertálás forrása:").grid(row=row_idx, column=0, columnspan=2, pady=10, sticky="w")
         self.forras_menu = tk.OptionMenu(self, self.valasztott_forras, *self.konv_forrasok)
@@ -186,6 +208,29 @@ class Ablak(tk.Tk):
                                                                                      padx=5, pady=5)
 
         row_idx += 1
+
+    def copy_to_clipboard_esemeny(self, entry_widget):
+        self.clipboard_clear()
+        self.clipboard_append(entry_widget.get())
+
+    def copy_multi_to_clipboard(self, entry_list, separator=", "):
+        values = [entry.get() for entry in entry_list]
+        formatted_string = separator.join(values)
+        self.clipboard_clear()
+        self.clipboard_append(formatted_string)
+
+    def copy_rgb_to_clipboard(self, entry_list):
+        values = [entry.get() for entry in entry_list]
+        formatted_string = f"rgb({', '.join(values)})"
+        self.clipboard_clear()
+        self.clipboard_append(formatted_string)
+
+    def copy_hsl_hsv_to_clipboard(self, entry_list, mode):
+        values = [entry.get() for entry in entry_list]
+        h, s, l_v = values[0], values[1], values[2]
+        formatted_string = f"{mode.lower()}({h}deg, {s}%, {l_v}%)"
+        self.clipboard_clear()
+        self.clipboard_append(formatted_string)
 
     def reset_ui_entry_fields(self):
         self.szin_kezelo.r = 0
