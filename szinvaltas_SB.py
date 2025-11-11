@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import colorchooser
+import colorsys
 
 
 class SzinKezelo_SB:
@@ -15,106 +16,211 @@ class SzinKezelo_SB:
             b = int(b)
             if 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255:
                 hex_kod = f'#{r:02x}{g:02x}{b:02x}'
-                self.r, self.g, self.b = r, g, b
                 return hex_kod.upper()
             else:
                 return "ÉRVÉNYTELEN"
         except ValueError:
             return "ÉRVÉNYTELEN"
 
-    def hex_to_rgb_konverter(self, hex_kod):
-        hex_kod = hex_kod.lstrip('#')
-        if len(hex_kod) == 6:
-            try:
-                r = int(hex_kod[0:2], 16)
-                g = int(hex_kod[2:4], 16)
-                b = int(hex_kod[4:6], 16)
+    def rgb_to_cmyk(self, r, g, b):
+        r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
+        k = 1 - max(r_norm, g_norm, b_norm)
+
+        if k == 1:
+            return 0, 0, 0, 100
+
+        c = (1 - r_norm - k) / (1 - k) * 100
+        m = (1 - g_norm - k) / (1 - k) * 100
+        y = (1 - b_norm - k) / (1 - k) * 100
+        k_perc = k * 100
+
+        return round(c), round(m), round(y), round(k_perc)
+
+    def cmyk_to_rgb(self, c, m, y, k):
+        c_norm, m_norm, y_norm, k_norm = c / 100.0, m / 100.0, y / 100.0, k / 100.0
+        r = 255 * (1 - c_norm) * (1 - k_norm)
+        g = 255 * (1 - m_norm) * (1 - k_norm)
+        b = 255 * (1 - y_norm) * (1 - k_norm)
+        return round(r), round(g), round(b)
+
+    def rgb_to_hsl(self, r, g, b):
+        r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
+        h, l, s = colorsys.rgb_to_hls(r_norm, g_norm, b_norm)
+        return round(h * 360), round(s * 100), round(l * 100)
+
+    def hsl_to_rgb(self, h, s, l):
+        h_norm, s_norm, l_norm = h / 360.0, s / 100.0, l / 100.0
+        r, g, b = colorsys.hls_to_rgb(h_norm, l_norm, s_norm)
+        return round(r * 255), round(g * 255), round(b * 255)
+
+    def rgb_to_hsv(self, r, g, b):
+        r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        return round(h * 360), round(s * 100), round(v * 100)
+
+    def hsv_to_rgb(self, h, s, v):
+        h_norm, s_norm, v_norm = h / 360.0, s / 100.0, v / 100.0
+        r, g, b = colorsys.hsv_to_rgb(h_norm, s_norm, v_norm)
+        return round(r * 255), round(g * 255), round(b * 255)
+
+    def update_rgb_from_source(self, source_type, values):
+        r, g, b = 0, 0, 0
+        valid = True
+
+        try:
+            val_f = [float(v) for v in values]
+
+            if source_type == "RGB":
+                r, g, b = [round(v) for v in val_f]
+            elif source_type == "HEX":
+                hex_str = values[0].lstrip('#')
+                if len(hex_str) == 6:
+                    r = int(hex_str[0:2], 16)
+                    g = int(hex_str[2:4], 16)
+                    b = int(hex_str[4:6], 16)
+                else:
+                    valid = False
+            elif source_type == "CMYK":
+                r, g, b = self.cmyk_to_rgb(*val_f)
+            elif source_type == "HSL":
+                r, g, b = self.hsl_to_rgb(*val_f)
+            elif source_type == "HSV":
+                r, g, b = self.hsv_to_rgb(*val_f)
+
+            if valid and 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255:
                 self.r, self.g, self.b = r, g, b
-                return r, g, b
-            except ValueError:
-                return None
-        return None
+            else:
+                raise ValueError
+        except (ValueError, IndexError):
+            pass
 
 
 class Ablak(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Színkód Konverter ZXS6MW")
+        self.title("Színkód Konverter ZXS6MW v1.1")
         self.szin_kezelo = SzinKezelo_SB()
-        self.geometry("500x350")
+        self.geometry("750x450")
 
+        self.input_widgets = {}
         self.setup_ui()
+        self.update_ui_from_rgb()
 
     def setup_ui(self):
-        self.rgb_entry = {}
-        szin_nevek = ["R", "G", "B"]
+        for i in range(1, 5):
+            tk.Grid.columnconfigure(self, i, weight=1)
+        tk.Grid.columnconfigure(self, 5, weight=1)
 
-        for i, nev in enumerate(szin_nevek):
-            tk.Label(self, text=f"{nev}:").grid(row=i, column=0, padx=5, pady=5, sticky="w")
-            entry = tk.Entry(self)
-            entry.grid(row=i, column=1, padx=5, pady=5, sticky="ew")
-            entry.insert(0, "0")
-            entry.bind("<KeyRelease>", self.frissites_esemeny)
-            self.rgb_entry[nev] = entry
+        row_idx = 0
 
-        tk.Label(self, text="HEX:").grid(row=3, column=0, padx=5, pady=5, sticky="w")
-        self.hex_entry = tk.Entry(self)
-        self.hex_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
-        self.hex_entry.insert(0, "#000000")
-        self.hex_entry.bind("<KeyRelease>", self.hex_frissites_esemeny)
+        tk.Label(self, text="RGB (0-255):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
+        rgb_nevek = ["R", "G", "B"]
+        self.rgb_entries = {}
+        for col, nev in enumerate(rgb_nevek):
+            entry = tk.Entry(self, width=5)
+            entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
+            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("RGB"))
+            self.rgb_entries[nev] = entry
+            self.input_widgets[nev] = entry
+        row_idx += 1
+
+        tk.Label(self, text="HEX:").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
+        self.hex_entry = tk.Entry(self, width=10)
+        self.hex_entry.grid(row=row_idx, column=1, columnspan=4, padx=5, pady=5, sticky="ew")
+        self.hex_entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("HEX"))
+        self.input_widgets["HEX"] = self.hex_entry
+        row_idx += 1
+
+        tk.Label(self, text="CMYK (0-100%):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
+        cmyk_nevek = ["C", "M", "Y", "K"]
+        self.cmyk_entries = {}
+        for col, nev in enumerate(cmyk_nevek):
+            entry = tk.Entry(self, width=5)
+            entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
+            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("CMYK"))
+            self.cmyk_entries[nev] = entry
+            self.input_widgets[nev] = entry
+        row_idx += 1
+
+        tk.Label(self, text="HSL (H/S/L):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
+        hsl_nevek = ["H", "S", "L"]
+        self.hsl_entries = {}
+        for col, nev in enumerate(hsl_nevek):
+            entry = tk.Entry(self, width=5)
+            entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
+            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("HSL"))
+            self.hsl_entries[nev] = entry
+            self.input_widgets[f"HSL_{nev}"] = entry
+        row_idx += 1
+
+        tk.Label(self, text="HSV (H/S/V):").grid(row=row_idx, column=0, padx=5, pady=5, sticky="w")
+        hsv_nevek = ["H", "S", "V"]
+        self.hsv_entries = {}
+        for col, nev in enumerate(hsv_nevek):
+            entry = tk.Entry(self, width=5)
+            entry.grid(row=row_idx, column=col + 1, padx=5, pady=5, sticky="ew")
+            entry.bind("<KeyRelease>", lambda event: self.frissites_esemeny("HSV"))
+            self.hsv_entries[nev] = entry
+            self.input_widgets[f"HSV_{nev}"] = entry
+        row_idx += 1
 
         self.szin_panel = tk.Label(self, bg="#000000", width=15, height=5, relief="groove")
-        self.szin_panel.grid(row=0, column=2, rowspan=4, padx=10, pady=10)
+        self.szin_panel.grid(row=0, column=5, rowspan=5, padx=10, pady=10, sticky="nsew")
 
-        tk.Button(self, text="Színválasztó", command=self.szinvalaszto_esemeny).grid(row=4, column=0, columnspan=2,
-                                                                                     pady=10)
+        tk.Button(self, text="Színválasztó", command=self.szinvalaszto_esemeny).grid(row=row_idx, column=0,
+                                                                                     columnspan=5, pady=10)
 
-        self.grid_columnconfigure(1, weight=1)
+    def update_ui_from_rgb(self):
+        r, g, b = self.szin_kezelo.r, self.szin_kezelo.g, self.szin_kezelo.b
 
-    def frissites_esemeny(self, event):
-        r_val = self.rgb_entry["R"].get()
-        g_val = self.rgb_entry["G"].get()
-        b_val = self.rgb_entry["B"].get()
-
-        hex_kod = self.szin_kezelo.rgb_to_hex_konverter_SB(r_val, g_val, b_val)
-
+        hex_kod = self.szin_kezelo.rgb_to_hex_konverter_SB(r, g, b)
         self.hex_entry.delete(0, tk.END)
         self.hex_entry.insert(0, hex_kod)
 
-        if hex_kod != "ÉRVÉNYTELEN":
-            self.szin_panel.config(bg=hex_kod)
-        else:
-            self.szin_panel.config(bg="gray")
+        self.rgb_entries["R"].delete(0, tk.END)
+        self.rgb_entries["G"].delete(0, tk.END)
+        self.rgb_entries["B"].delete(0, tk.END)
+        self.rgb_entries["R"].insert(0, str(r))
+        self.rgb_entries["G"].insert(0, str(g))
+        self.rgb_entries["B"].insert(0, str(b))
 
-    def hex_frissites_esemeny(self, event):
-        hex_val = self.hex_entry.get()
-        rgb_tuple = self.szin_kezelo.hex_to_rgb_konverter(hex_val)
+        c, m, y, k = self.szin_kezelo.rgb_to_cmyk(r, g, b)
+        for nev, val in zip(["C", "M", "Y", "K"], [c, m, y, k]):
+            self.cmyk_entries[nev].delete(0, tk.END)
+            self.cmyk_entries[nev].insert(0, str(val))
 
-        if rgb_tuple:
-            r, g, b = rgb_tuple
+        h_hsl, s_hsl, l_hsl = self.szin_kezelo.rgb_to_hsl(r, g, b)
+        for nev, val in zip(["H", "S", "L"], [h_hsl, s_hsl, l_hsl]):
+            self.hsl_entries[nev].delete(0, tk.END)
+            self.hsl_entries[nev].insert(0, str(val))
 
-            for nev, val in zip(["R", "G", "B"], [r, g, b]):
-                self.rgb_entry[nev].delete(0, tk.END)
-                self.rgb_entry[nev].insert(0, str(val))
+        h_hsv, s_hsv, v_hsv = self.szin_kezelo.rgb_to_hsv(r, g, b)
+        for nev, val in zip(["H", "S", "V"], [h_hsv, s_hsv, v_hsv]):
+            self.hsv_entries[nev].delete(0, tk.END)
+            self.hsv_entries[nev].insert(0, str(val))
 
-            self.szin_panel.config(bg=hex_val)
-        else:
-            self.szin_panel.config(bg="gray")
+        self.szin_panel.config(bg=hex_kod)
+
+    def frissites_esemeny(self, source_type):
+        values = []
+        if source_type == "RGB":
+            values = [self.rgb_entries["R"].get(), self.rgb_entries["G"].get(), self.rgb_entries["B"].get()]
+        elif source_type == "HEX":
+            values = [self.hex_entry.get()]
+        elif source_type == "CMYK":
+            values = [self.cmyk_entries["C"].get(), self.cmyk_entries["M"].get(), self.cmyk_entries["Y"].get(),
+                      self.cmyk_entries["K"].get()]
+        elif source_type == "HSL":
+            values = [self.hsl_entries["H"].get(), self.hsl_entries["S"].get(), self.hsl_entries["L"].get()]
+        elif source_type == "HSV":
+            values = [self.hsv_entries["H"].get(), self.hsv_entries["S"].get(), self.hsv_entries["V"].get()]
+
+        self.szin_kezelo.update_rgb_from_source(source_type, values)
+        self.update_ui_from_rgb()
 
     def szinvalaszto_esemeny(self):
         szin_kod = colorchooser.askcolor(title="Szín kiválasztása")
         if szin_kod:
-            rgb_tuple = szin_kod[0]
-            hex_val = szin_kod[1]
-
-            if rgb_tuple:
-                r, g, b = [int(x) for x in rgb_tuple]
-
-                for nev, val in zip(["R", "G", "B"], [r, g, b]):
-                    self.rgb_entry[nev].delete(0, tk.END)
-                    self.rgb_entry[nev].insert(0, str(val))
-
-            self.hex_entry.delete(0, tk.END)
-            self.hex_entry.insert(0, hex_val.upper())
-
-            self.szin_panel.config(bg=hex_val)
+            r, g, b = [round(x) for x in szin_kod[0]]
+            self.szin_kezelo.r, self.szin_kezelo.g, self.szin_kezelo.b = r, g, b
+            self.update_ui_from_rgb()
